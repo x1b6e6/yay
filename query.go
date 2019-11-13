@@ -289,16 +289,23 @@ func queryRepo(pkgInputN []string) (s repoQuery, err error) {
 		return
 	}
 
-	_ = dbList.ForEach(func(db alpm.DB) error {
+	err = dbList.ForEach(func(db alpm.DB) error {
 		if len(pkgInputN) == 0 {
 			pkgs := db.PkgCache()
 			s = append(s, pkgs.Slice()...)
 		} else {
-			pkgs := db.Search(pkgInputN)
+			pkgs, err := db.Search(pkgInputN)
+			if err != nil {
+				return err
+			}
 			s = append(s, pkgs.Slice()...)
 		}
 		return nil
 	})
+
+	if err != nil {
+		return
+	}
 
 	if config.SortMode == bottomUp {
 		for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
