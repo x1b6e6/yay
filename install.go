@@ -70,6 +70,7 @@ func install(cmdArgs *settings.Arguments, dbExecutor db.Executor, ignoreProvider
 	noCheck := strings.Contains(config.MFlags, "--nocheck")
 	sysupgradeArg := cmdArgs.ExistsArg("u", "sysupgrade")
 	refreshArg := cmdArgs.ExistsArg("y", "refresh")
+	oneByOne := cmdArgs.ExistsArg("one-by-one")
 	warnings := query.NewWarnings()
 
 	if noDeps {
@@ -113,6 +114,7 @@ func install(cmdArgs *settings.Arguments, dbExecutor db.Executor, ignoreProvider
 	arguments := cmdArgs.Copy()
 	arguments.DelArg("asdeps", "asdep")
 	arguments.DelArg("asexplicit", "asexp")
+	arguments.DelArg("one-by-one")
 	arguments.Op = "S"
 	arguments.ClearTargets()
 
@@ -354,9 +356,11 @@ func install(cmdArgs *settings.Arguments, dbExecutor db.Executor, ignoreProvider
 		_ = completion.Update(dbExecutor, config.AURURL, config.Runtime.CompletionPath, config.CompletionInterval, false)
 	}()
 
-	err = downloadPkgbuildsSources(do.Aur, incompatible)
-	if err != nil {
-		return err
+	if !oneByOne {
+		err = downloadPkgbuildsSources(do.Aur, incompatible)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = buildInstallPkgbuilds(cmdArgs, dbExecutor, dp, do, srcinfos, incompatible, conflicts, noDeps, noCheck)
@@ -945,6 +949,7 @@ func buildInstallPkgbuilds(
 	arguments.Op = "U"
 	arguments.DelArg("confirm")
 	arguments.DelArg("noconfirm")
+	arguments.DelArg("one-by-one")
 	arguments.DelArg("c", "clean")
 	arguments.DelArg("q", "quiet")
 	arguments.DelArg("q", "quiet")

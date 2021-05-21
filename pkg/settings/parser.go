@@ -385,6 +385,7 @@ func isArg(arg string) bool {
 	case "norebuild":
 	case "batchinstall":
 	case "nobatchinstall":
+	case "one-by-one":
 	case "answerclean":
 	case "noanswerclean":
 	case "answerdiff":
